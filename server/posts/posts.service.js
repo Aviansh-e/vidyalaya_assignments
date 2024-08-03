@@ -10,17 +10,22 @@ const axios = require('axios').default;
  */
 async function fetchPosts(params) {
   const { start = 0, limit = 10 } = params || {};
-  const { data: posts } = await axios.get(
-    'https://jsonplaceholder.typicode.com/posts?limit',
-    {
-      params: {
-        _start: start,
-        _limit: limit,
-      },
-    },
-  );
 
-  return posts;
+  try {
+    const { data: posts } = await axios.get(
+      'https://jsonplaceholder.typicode.com/posts',
+      {
+        params: {
+          _start: start,
+          _limit: limit,
+        },
+      }
+    );
+    return posts;
+  } catch (err) {
+    console.error('Error from featching posts is:', err.message);
+    return [];
+  }
 }
 
 module.exports = { fetchPosts };

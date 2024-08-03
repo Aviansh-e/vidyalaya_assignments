@@ -1,6 +1,7 @@
 import PropTypes from 'prop-types';
 import React, { useRef } from 'react';
 import styled from '@emotion/styled';
+import { WindowSizeProvider } from '../context/usewindowidth';
 
 const PostContainer = styled.div(() => ({
   width: '300px',
@@ -63,6 +64,32 @@ const NextButton = styled(Button)`
   right: 10px;
 `;
 
+const UserName = styled.h3(() => ({
+  margin: 0,
+  padding: '2px',
+}));
+
+const Email = styled.h4(() => ({
+  margin: 0,
+  padding: '2px',
+}));
+
+const Initials = styled.h4(() => ({
+  margin: '3px',
+  padding: '3px',
+  fontWeight: 'bold',
+  fontSize: '20px',
+  width: '50px',
+  height: '50px',
+  lineHeight: '34px',
+  borderRadius: '50%',
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  backgroundColor: '#f4f4f4f4',
+  color: '#00000',
+}));
+
 const Post = ({ post }) => {
   const carouselRef = useRef(null);
 
@@ -84,8 +111,30 @@ const Post = ({ post }) => {
     }
   };
 
+  const getInitials = (name) => {
+    if (!name) return '';
+    const [firstName, lastName] = name.split(' ');
+    const firstInitial = firstName.charAt(0);
+    const lastInitial = lastName.charAt(lastName.length - 1);
+    return `${firstInitial}${lastInitial}`;
+  };
+
   return (
+
     <PostContainer>
+      {post.user && (
+        <>
+          <div style={{ display: 'flex' }}>
+            <div>
+              <Initials>{getInitials(post.user.name).toUpperCase()}</Initials>
+            </div>
+            <div>
+              <UserName>{post.user.name}</UserName>
+              <Email>{post.user.email}</Email>
+            </div>
+          </div>
+        </>
+      )}
       <CarouselContainer>
         <Carousel ref={carouselRef}>
           {post.images.map((image, index) => (
@@ -102,17 +151,24 @@ const Post = ({ post }) => {
         <p>{post.body}</p>
       </Content>
     </PostContainer>
+
   );
 };
 
 Post.propTypes = {
   post: PropTypes.shape({
-    content: PropTypes.any,
-    images: PropTypes.shape({
-      map: PropTypes.func,
+    images: PropTypes.arrayOf(
+      PropTypes.shape({
+        url: PropTypes.string.isRequired,
+      })
+    ),
+    title: PropTypes.string,
+    body: PropTypes.string,
+    user: PropTypes.shape({
+      name: PropTypes.string,
+      email: PropTypes.string,
     }),
-    title: PropTypes.any,
-  }),
+  }).isRequired,
 };
 
 export default Post;

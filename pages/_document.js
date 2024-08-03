@@ -1,9 +1,11 @@
 import React from 'react';
 import Document, { Html, Head, Main, NextScript } from 'next/document';
+import { WindowSizeProvider } from '../components/context/usewindowidth';
 
 class MyDocument extends Document {
   render() {
     return (
+
       <Html>
         <Head />
         <body>
@@ -35,6 +37,7 @@ class MyDocument extends Document {
           `}</style>
         </body>
       </Html>
+
     );
   }
 }

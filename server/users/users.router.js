@@ -1,12 +1,16 @@
 const express = require('express');
-const { fetchAllUsers } = require('./users.service');
+const { fetchAllUsers, fetchUserById } = require('./users.service');
 
 const router = express.Router();
 
 router.get('/', async (req, res) => {
-  const users = await fetchAllUsers();
+  try {
+    const users = await fetchAllUsers();
+    res.json(users);
+  } catch (err) {
+    console.log("error is :", err);
+  }
 
-  res.json(users);
 });
 
 module.exports = router;

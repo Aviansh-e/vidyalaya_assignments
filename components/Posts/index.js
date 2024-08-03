@@ -1,9 +1,13 @@
 import axios from 'axios';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useContext } from 'react';
 import styled from '@emotion/styled';
 import Post from './Post';
 import Container from '../common/Container';
-import useWindowWidth from '../hooks/useWindowWidth';
+// import useWindowWidth from '../hooks/useWindowWidth';
+
+import WindowSizeContext from '../context/Usecontext';
+
+
 
 const PostListContainer = styled.div(() => ({
   display: 'flex',
@@ -34,42 +38,64 @@ const LoadMoreButton = styled.button(() => ({
 
 export default function Posts() {
   const [posts, setPosts] = useState([]);
+  const [users, setUsers] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [showLoad, setShowLoad] = useState(true);
 
-  const { isSmallerDevice } = useWindowWidth();
+  const isSmallerDevice = useContext(WindowSizeContext);
+
+  // const { isSmallerDevice } = useWindowWidth();
+
 
   useEffect(() => {
-    const fetchPost = async () => {
-      const { data: posts } = await axios.get('/api/v1/posts', {
-        params: { start: 0, limit: isSmallerDevice ? 5 : 10 },
-      });
-      setPosts(posts);
+    const fetchData = async () => {
+      try {
+        const [postsData, usersData] = await Promise.all([
+          axios.get('/api/v1/posts', { params: { start: 0, limit: isSmallerDevice ? 5 : 10 } }),
+          axios.get('/api/v1/users'),
+        ]);
+
+        setPosts(postsData.data);
+        setUsers(usersData.data);
+        console.log(isSmallerDevice);
+      } catch (error) {
+        console.error("Error fetching data", error);
+      }
     };
 
-    fetchPost();
+    fetchData();
   }, [isSmallerDevice]);
 
   const handleClick = () => {
     setIsLoading(true);
+    setShowLoad(false);
 
     setTimeout(() => {
       setIsLoading(false);
-    }, 3000);
+    }, 1000);
   };
+
+  // Merrging user and post data
+  const postsWithUserData = posts.map(post => {
+    const user = users.find(user => user.id === post.id); //
+    return { ...post, user };
+  });
 
   return (
     <Container>
       <PostListContainer>
-        {posts.map(post => (
-          <Post post={post} />
+        {postsWithUserData.map(post => (
+          <Post key={post.id} post={post} />
         ))}
       </PostListContainer>
-
-      <div style={{ display: 'flex', justifyContent: 'center' }}>
-        <LoadMoreButton onClick={handleClick} disabled={isLoading}>
-          {!isLoading ? 'Load More' : 'Loading...'}
-        </LoadMoreButton>
-      </div>
+      {
+        showLoad &&
+        <div style={{ display: 'flex', justifyContent: 'center' }}>
+          <LoadMoreButton onClick={handleClick} disabled={isLoading}>
+            {!isLoading ? 'Load More' : 'Loading...'}
+          </LoadMoreButton>
+        </div>
+      }
     </Container>
   );
 }
